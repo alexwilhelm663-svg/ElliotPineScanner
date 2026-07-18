@@ -238,3 +238,24 @@ plot(target261, title="Target 2.618")
 alertcondition(close >= target161,
     title="Wave Target",
     message="Price reached Fibonacci projection")
+
+//=========================
+// Wave Score Engine
+//=========================
+float waveScore = 0.0
+
+waveScore += impulseValid ? 30 : 0
+waveScore += abcCorrection ? 20 : 0
+waveScore += htfBull ? 20 : 0
+waveScore += confidence >= 80 ? 20 : 0
+waveScore += close > target100 ? 10 : 0
+
+waveScore := math.min(waveScore, 100)
+
+var table scoreTable = table.new(position.bottom_right, 1, 1)
+if barstate.islast
+    table.cell(scoreTable, 0, 0, "Wave Score: " + str.tostring(waveScore))
+
+alertcondition(waveScore >= 80,
+    title="High Score",
+    message="High-confidence Elliott setup")
