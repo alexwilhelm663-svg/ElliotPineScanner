@@ -276,3 +276,41 @@ if barstate.islast
 alertcondition(activeScenario == "ALTERNATE",
     title="Alternate Count Active",
     message="Alternate Elliott count has become dominant")
+
+//=========================
+// Elliott Setup Scanner
+//=========================
+wave12Setup =
+     impulseValid and
+     htfBull and
+     close > fib618
+
+wave3Breakout =
+     wave12Setup and
+     close > lastHigh
+
+abcCompletion =
+     abcCorrection and
+     close >= fib618
+
+plotshape(wave12Setup,
+     title="1-2 Setup",
+     style=shape.circle,
+     location=location.belowbar)
+
+plotshape(wave3Breakout,
+     title="Wave 3",
+     style=shape.triangleup,
+     location=location.belowbar)
+
+alertcondition(wave12Setup,
+     title="1-2 Setup",
+     message="Potential Elliott 1-2 setup detected")
+
+alertcondition(wave3Breakout,
+     title="Wave 3 Breakout",
+     message="Wave 3 breakout detected")
+
+alertcondition(abcCompletion,
+     title="ABC Complete",
+     message="ABC correction completed")
