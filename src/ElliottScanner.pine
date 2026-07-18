@@ -314,3 +314,14 @@ alertcondition(wave3Breakout,
 alertcondition(abcCompletion,
      title="ABC Complete",
      message="ABC correction completed")
+
+//=========================
+// Chart Renderer
+//=========================
+if wave3Breakout
+    label.new(bar_index, high, "③", style=label.style_label_down)
+
+if abcCompletion
+    label.new(bar_index, low, "ABC", style=label.style_label_up)
+
+line.new(bar_index-1, lastLow, bar_index, lastHigh, extend=extend.none)
