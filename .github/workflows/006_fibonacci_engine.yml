@@ -1,0 +1,47 @@
+name: 006 Fibonacci Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fibonacci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Fibonacci Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Fibonacci Engine
+          //=========================
+          fibRange = math.abs(lastHigh - lastLow)
+
+          fib236 = lastHigh - fibRange * 0.236
+          fib382 = lastHigh - fibRange * 0.382
+          fib500 = lastHigh - fibRange * 0.500
+          fib618 = lastHigh - fibRange * 0.618
+          fib786 = lastHigh - fibRange * 0.786
+
+          plot(fib236, title="Fib 23.6")
+          plot(fib382, title="Fib 38.2")
+          plot(fib500, title="Fib 50")
+          plot(fib618, title="Fib 61.8")
+          plot(fib786, title="Fib 78.6")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "006 Fibonacci Engine"
+          git push
