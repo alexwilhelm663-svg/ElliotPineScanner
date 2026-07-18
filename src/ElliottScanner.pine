@@ -189,3 +189,31 @@ alertcondition(
     impulseValid,
     title="Impulse Complete",
     message="Potential Elliott impulse detected")
+
+//=========================
+// Correction Pattern Engine
+//=========================
+abcCorrection =
+     correctionDown and
+     close > fib382 and
+     close < fib618
+
+flatCorrection =
+     correctionDown and
+     math.abs(close - lastLow) < fibRange * 0.1
+
+triangleCorrection =
+     ta.falling(high, 5) and
+     ta.rising(low, 5)
+
+correctionType =
+     abcCorrection ? "ABC" :
+     flatCorrection ? "FLAT" :
+     triangleCorrection ? "TRIANGLE" :
+     "NONE"
+
+label.new(bar_index, low, correctionType, style=label.style_label_up)
+
+alertcondition(abcCorrection,
+     title="ABC Correction",
+     message="ABC correction detected")
