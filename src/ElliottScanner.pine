@@ -73,3 +73,26 @@ label.new(
     "W" + str.tostring(waveCount),
     style=label.style_label_down
 )
+
+//=========================
+// Alternate Count Engine
+//=========================
+var int primaryScore = 0
+var int alternateScore = 0
+
+if impulseUp
+    primaryScore += 2
+else
+    alternateScore += 1
+
+if correctionDown
+    alternateScore += 2
+
+activeCount = primaryScore >= alternateScore ? "PRIMARY" : "ALTERNATE"
+
+label.new(
+    bar_index,
+    low,
+    activeCount,
+    style=label.style_label_up
+)
