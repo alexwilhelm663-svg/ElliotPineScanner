@@ -112,3 +112,17 @@ confidence = math.min(score, 100)
 var table t = table.new(position.top_right, 1, 1)
 if barstate.islast
     table.cell(t, 0, 0, "Confidence: " + str.tostring(confidence) + "%")
+
+//=========================
+// Alert Engine
+//=========================
+bullishSignal = impulseUp and confidence >= 80
+bearishSignal = correctionDown and confidence >= 80
+
+alertcondition(bullishSignal,
+    title="Bullish Setup",
+    message="Bullish Elliott setup detected")
+
+alertcondition(bearishSignal,
+    title="Bearish Setup",
+    message="Bearish Elliott setup detected")
