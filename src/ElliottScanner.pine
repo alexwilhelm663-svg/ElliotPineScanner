@@ -259,3 +259,20 @@ if barstate.islast
 alertcondition(waveScore >= 80,
     title="High Score",
     message="High-confidence Elliott setup")
+
+//=========================
+// Alternate Count Ranking
+//=========================
+primaryRank = waveScore
+alternateRank = waveScore - 15
+
+activeScenario = primaryRank >= alternateRank ? "PRIMARY" : "ALTERNATE"
+
+var table scenarioTable = table.new(position.top_left, 1, 2)
+if barstate.islast
+    table.cell(scenarioTable, 0, 0, "Scenario")
+    table.cell(scenarioTable, 0, 1, activeScenario)
+
+alertcondition(activeScenario == "ALTERNATE",
+    title="Alternate Count Active",
+    message="Alternate Elliott count has become dominant")
