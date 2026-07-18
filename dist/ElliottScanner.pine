@@ -1,0 +1,150 @@
+//@version=6
+indicator("Elliott Scanner Pro", overlay=true, max_labels_count=500, max_lines_count=500)
+
+pivotLength = input.int(5, "Pivot Length", minval=2)
+showPivots = input.bool(true, "Show Pivots")
+
+ph = ta.pivothigh(high, pivotLength, pivotLength)
+pl = ta.pivotlow(low, pivotLength, pivotLength)
+
+plotshape(showPivots and not na(ph), style=shape.triangledown, location=location.abovebar)
+plotshape(showPivots and not na(pl), style=shape.triangleup, location=location.belowbar)
+
+//=========================
+// ZigZag Engine
+//=========================
+var float lastHigh = na
+var float lastLow = na
+
+if not na(ph)
+    lastHigh := ph
+
+if not na(pl)
+    lastLow := pl
+
+plot(lastHigh, title="Last High")
+plot(lastLow, title="Last Low")
+
+//=========================
+// Elliott Rule Engine
+//=========================
+impulseUp =
+     not na(lastLow) and
+     not na(lastHigh) and
+     lastHigh > lastLow
+
+correctionDown =
+     not na(lastHigh) and
+     close < lastHigh
+
+bgcolor(impulseUp ? color.new(color.green,90) : na)
+bgcolor(correctionDown ? color.new(color.red,90) : na)
+
+//=========================
+// Fibonacci Engine
+//=========================
+fibRange = math.abs(lastHigh - lastLow)
+
+fib236 = lastHigh - fibRange * 0.236
+fib382 = lastHigh - fibRange * 0.382
+fib500 = lastHigh - fibRange * 0.500
+fib618 = lastHigh - fibRange * 0.618
+fib786 = lastHigh - fibRange * 0.786
+
+plot(fib236, title="Fib 23.6")
+plot(fib382, title="Fib 38.2")
+plot(fib500, title="Fib 50")
+plot(fib618, title="Fib 61.8")
+plot(fib786, title="Fib 78.6")
+
+//=========================
+// Wave Counter
+//=========================
+var int waveCount = 0
+
+if not na(ph) or not na(pl)
+    waveCount += 1
+
+waveCount := math.min(waveCount, 5)
+
+label.new(
+    bar_index,
+    high,
+    "W" + str.tostring(waveCount),
+    style=label.style_label_down
+)
+
+//=========================
+// Alternate Count Engine
+//=========================
+var int primaryScore = 0
+var int alternateScore = 0
+
+if impulseUp
+    primaryScore += 2
+else
+    alternateScore += 1
+
+if correctionDown
+    alternateScore += 2
+
+activeCount = primaryScore >= alternateScore ? "PRIMARY" : "ALTERNATE"
+
+label.new(
+    bar_index,
+    low,
+    activeCount,
+    style=label.style_label_up
+)
+
+//=========================
+// Confidence Scoring
+//=========================
+score = 0.0
+
+score += impulseUp ? 40 : 0
+score += correctionDown ? 20 : 0
+score += not na(lastHigh) ? 20 : 0
+score += not na(lastLow) ? 20 : 0
+
+confidence = math.min(score, 100)
+
+var table t = table.new(position.top_right, 1, 1)
+if barstate.islast
+    table.cell(t, 0, 0, "Confidence: " + str.tostring(confidence) + "%")
+
+//=========================
+// Alert Engine
+//=========================
+bullishSignal = impulseUp and confidence >= 80
+bearishSignal = correctionDown and confidence >= 80
+
+alertcondition(bullishSignal,
+    title="Bullish Setup",
+    message="Bullish Elliott setup detected")
+
+alertcondition(bearishSignal,
+    title="Bearish Setup",
+    message="Bearish Elliott setup detected")
+
+//=========================
+// TradingView Optimization
+//=========================
+showBackground = input.bool(true, "Show Trend Background")
+
+trendColor =
+     bullishSignal ? color.new(color.green, 85) :
+     bearishSignal ? color.new(color.red, 85) :
+     na
+
+bgcolor(showBackground ? trendColor : na)
+
+plotchar(bullishSignal,
+    title="Bullish",
+    char="▲",
+    location=location.belowbar)
+
+plotchar(bearishSignal,
+    title="Bearish",
+    char="▼",
+    location=location.abovebar)
