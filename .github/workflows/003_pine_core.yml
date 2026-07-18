@@ -1,0 +1,43 @@
+name: 003 Pine Core
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pine-core:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Pine Core
+        shell: bash
+        run: |
+          mkdir -p src
+
+          cat > src/ElliottScanner.pine <<'EOF'
+          //@version=6
+          indicator("Elliott Scanner Pro", overlay=true, max_labels_count=500, max_lines_count=500)
+
+          pivotLength = input.int(5, "Pivot Length", minval=2)
+          showPivots = input.bool(true, "Show Pivots")
+
+          ph = ta.pivothigh(high, pivotLength, pivotLength)
+          pl = ta.pivotlow(low, pivotLength, pivotLength)
+
+          plotshape(showPivots and not na(ph), style=shape.triangledown, location=location.abovebar)
+          plotshape(showPivots and not na(pl), style=shape.triangleup, location=location.belowbar)
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "003 Pine Core"
+          git push
