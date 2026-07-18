@@ -163,3 +163,29 @@ htfBear = htfClose < ta.sma(htfClose, 20)
 
 plot(htfHigh, title="HTF High")
 plot(htfLow, title="HTF Low")
+
+//=========================
+// Elliott Rule Engine V6
+//=========================
+wave1Valid = lastHigh > lastLow
+wave2Valid = close > lastLow
+wave3Valid = lastHigh > nz(lastHigh[1], lastHigh)
+wave4Valid = close > lastLow
+wave5Valid = close > ta.sma(close, 20)
+
+impulseValid =
+     wave1Valid and
+     wave2Valid and
+     wave3Valid and
+     wave4Valid and
+     wave5Valid
+
+plotchar(impulseValid,
+    title="Impulse Valid",
+    char="5",
+    location=location.top)
+
+alertcondition(
+    impulseValid,
+    title="Impulse Complete",
+    message="Potential Elliott impulse detected")
