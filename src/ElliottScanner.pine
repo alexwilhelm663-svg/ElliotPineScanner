@@ -325,3 +325,22 @@ if abcCompletion
     label.new(bar_index, low, "ABC", style=label.style_label_up)
 
 line.new(bar_index-1, lastLow, bar_index, lastHigh, extend=extend.none)
+
+//=========================
+// Backtesting Engine
+//=========================
+var int wins = 0
+var int losses = 0
+
+if wave3Breakout
+    wins += close > open ? 1 : 0
+    losses += close <= open ? 1 : 0
+
+totalTrades = wins + losses
+winRate = totalTrades > 0 ? wins * 100.0 / totalTrades : na
+
+var table bt = table.new(position.bottom_left, 1, 3)
+if barstate.islast
+    table.cell(bt, 0, 0, "Trades: " + str.tostring(totalTrades))
+    table.cell(bt, 0, 1, "Wins: " + str.tostring(wins))
+    table.cell(bt, 0, 2, "Win %: " + str.tostring(winRate))
