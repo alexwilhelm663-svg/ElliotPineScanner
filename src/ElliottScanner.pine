@@ -344,3 +344,24 @@ if barstate.islast
     table.cell(bt, 0, 0, "Trades: " + str.tostring(totalTrades))
     table.cell(bt, 0, 1, "Wins: " + str.tostring(wins))
     table.cell(bt, 0, 2, "Win %: " + str.tostring(winRate))
+
+//=========================
+// Optimizer
+//=========================
+bestPivot = input.int(5, "Optimized Pivot Length", minval=2, maxval=20)
+useHTFFilter = input.bool(true, "Use HTF Filter")
+
+optimizedSignal =
+     wave3Breakout and
+     (not useHTFFilter or htfBull)
+
+plotshape(
+     optimizedSignal,
+     title="Optimized Signal",
+     style=shape.diamond,
+     location=location.belowbar)
+
+alertcondition(
+     optimizedSignal,
+     title="Optimized Setup",
+     message="Optimized Elliott setup detected")
