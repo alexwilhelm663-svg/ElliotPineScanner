@@ -96,3 +96,19 @@ label.new(
     activeCount,
     style=label.style_label_up
 )
+
+//=========================
+// Confidence Scoring
+//=========================
+score = 0.0
+
+score += impulseUp ? 40 : 0
+score += correctionDown ? 20 : 0
+score += not na(lastHigh) ? 20 : 0
+score += not na(lastLow) ? 20 : 0
+
+confidence = math.min(score, 100)
+
+var table t = table.new(position.top_right, 1, 1)
+if barstate.islast
+    table.cell(t, 0, 0, "Confidence: " + str.tostring(confidence) + "%")
