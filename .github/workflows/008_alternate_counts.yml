@@ -1,0 +1,53 @@
+name: 008 Alternate Counts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  alternate-counts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Alternate Count Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Alternate Count Engine
+          //=========================
+          var int primaryScore = 0
+          var int alternateScore = 0
+
+          if impulseUp
+              primaryScore += 2
+          else
+              alternateScore += 1
+
+          if correctionDown
+              alternateScore += 2
+
+          activeCount = primaryScore >= alternateScore ? "PRIMARY" : "ALTERNATE"
+
+          label.new(
+              bar_index,
+              low,
+              activeCount,
+              style=label.style_label_up
+          )
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "008 Alternate Counts"
+          git push
