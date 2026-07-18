@@ -148,3 +148,18 @@ plotchar(bearishSignal,
     title="Bearish",
     char="▼",
     location=location.abovebar)
+
+//=========================
+// Multi-Timeframe Engine
+//=========================
+tfHigher = input.timeframe("240", "Higher Timeframe")
+
+htfHigh = request.security(syminfo.tickerid, tfHigher, high)
+htfLow  = request.security(syminfo.tickerid, tfHigher, low)
+htfClose = request.security(syminfo.tickerid, tfHigher, close)
+
+htfBull = htfClose > ta.sma(htfClose, 20)
+htfBear = htfClose < ta.sma(htfClose, 20)
+
+plot(htfHigh, title="HTF High")
+plot(htfLow, title="HTF Low")
