@@ -9,3 +9,18 @@ pl = ta.pivotlow(low, pivotLength, pivotLength)
 
 plotshape(showPivots and not na(ph), style=shape.triangledown, location=location.abovebar)
 plotshape(showPivots and not na(pl), style=shape.triangleup, location=location.belowbar)
+
+//=========================
+// ZigZag Engine
+//=========================
+var float lastHigh = na
+var float lastLow = na
+
+if not na(ph)
+    lastHigh := ph
+
+if not na(pl)
+    lastLow := pl
+
+plot(lastHigh, title="Last High")
+plot(lastLow, title="Last Low")
