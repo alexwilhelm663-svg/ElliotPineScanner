@@ -24,3 +24,18 @@ if not na(pl)
 
 plot(lastHigh, title="Last High")
 plot(lastLow, title="Last Low")
+
+//=========================
+// Elliott Rule Engine
+//=========================
+impulseUp =
+     not na(lastLow) and
+     not na(lastHigh) and
+     lastHigh > lastLow
+
+correctionDown =
+     not na(lastHigh) and
+     close < lastHigh
+
+bgcolor(impulseUp ? color.new(color.green,90) : na)
+bgcolor(correctionDown ? color.new(color.red,90) : na)
