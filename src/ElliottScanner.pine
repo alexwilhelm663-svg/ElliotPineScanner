@@ -39,3 +39,20 @@ correctionDown =
 
 bgcolor(impulseUp ? color.new(color.green,90) : na)
 bgcolor(correctionDown ? color.new(color.red,90) : na)
+
+//=========================
+// Fibonacci Engine
+//=========================
+fibRange = math.abs(lastHigh - lastLow)
+
+fib236 = lastHigh - fibRange * 0.236
+fib382 = lastHigh - fibRange * 0.382
+fib500 = lastHigh - fibRange * 0.500
+fib618 = lastHigh - fibRange * 0.618
+fib786 = lastHigh - fibRange * 0.786
+
+plot(fib236, title="Fib 23.6")
+plot(fib382, title="Fib 38.2")
+plot(fib500, title="Fib 50")
+plot(fib618, title="Fib 61.8")
+plot(fib786, title="Fib 78.6")
