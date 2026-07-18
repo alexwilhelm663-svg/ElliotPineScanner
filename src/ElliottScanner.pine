@@ -217,3 +217,24 @@ label.new(bar_index, low, correctionType, style=label.style_label_up)
 alertcondition(abcCorrection,
      title="ABC Correction",
      message="ABC correction detected")
+
+//=========================
+// Fibonacci Projection Engine
+//=========================
+waveRange = math.abs(lastHigh - lastLow)
+
+target100 = lastHigh + waveRange * 1.000
+target127 = lastHigh + waveRange * 1.272
+target161 = lastHigh + waveRange * 1.618
+target200 = lastHigh + waveRange * 2.000
+target261 = lastHigh + waveRange * 2.618
+
+plot(target100, title="Target 1.000")
+plot(target127, title="Target 1.272")
+plot(target161, title="Target 1.618")
+plot(target200, title="Target 2.000")
+plot(target261, title="Target 2.618")
+
+alertcondition(close >= target161,
+    title="Wave Target",
+    message="Price reached Fibonacci projection")
