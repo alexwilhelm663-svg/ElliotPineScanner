@@ -148,3 +148,220 @@ plotchar(bearishSignal,
     title="Bearish",
     char="▼",
     location=location.abovebar)
+
+//=========================
+// Multi-Timeframe Engine
+//=========================
+tfHigher = input.timeframe("240", "Higher Timeframe")
+
+htfHigh = request.security(syminfo.tickerid, tfHigher, high)
+htfLow  = request.security(syminfo.tickerid, tfHigher, low)
+htfClose = request.security(syminfo.tickerid, tfHigher, close)
+
+htfBull = htfClose > ta.sma(htfClose, 20)
+htfBear = htfClose < ta.sma(htfClose, 20)
+
+plot(htfHigh, title="HTF High")
+plot(htfLow, title="HTF Low")
+
+//=========================
+// Elliott Rule Engine V6
+//=========================
+wave1Valid = lastHigh > lastLow
+wave2Valid = close > lastLow
+wave3Valid = lastHigh > nz(lastHigh[1], lastHigh)
+wave4Valid = close > lastLow
+wave5Valid = close > ta.sma(close, 20)
+
+impulseValid =
+     wave1Valid and
+     wave2Valid and
+     wave3Valid and
+     wave4Valid and
+     wave5Valid
+
+plotchar(impulseValid,
+    title="Impulse Valid",
+    char="5",
+    location=location.top)
+
+alertcondition(
+    impulseValid,
+    title="Impulse Complete",
+    message="Potential Elliott impulse detected")
+
+//=========================
+// Correction Pattern Engine
+//=========================
+abcCorrection =
+     correctionDown and
+     close > fib382 and
+     close < fib618
+
+flatCorrection =
+     correctionDown and
+     math.abs(close - lastLow) < fibRange * 0.1
+
+triangleCorrection =
+     ta.falling(high, 5) and
+     ta.rising(low, 5)
+
+correctionType =
+     abcCorrection ? "ABC" :
+     flatCorrection ? "FLAT" :
+     triangleCorrection ? "TRIANGLE" :
+     "NONE"
+
+label.new(bar_index, low, correctionType, style=label.style_label_up)
+
+alertcondition(abcCorrection,
+     title="ABC Correction",
+     message="ABC correction detected")
+
+//=========================
+// Fibonacci Projection Engine
+//=========================
+waveRange = math.abs(lastHigh - lastLow)
+
+target100 = lastHigh + waveRange * 1.000
+target127 = lastHigh + waveRange * 1.272
+target161 = lastHigh + waveRange * 1.618
+target200 = lastHigh + waveRange * 2.000
+target261 = lastHigh + waveRange * 2.618
+
+plot(target100, title="Target 1.000")
+plot(target127, title="Target 1.272")
+plot(target161, title="Target 1.618")
+plot(target200, title="Target 2.000")
+plot(target261, title="Target 2.618")
+
+alertcondition(close >= target161,
+    title="Wave Target",
+    message="Price reached Fibonacci projection")
+
+//=========================
+// Wave Score Engine
+//=========================
+float waveScore = 0.0
+
+waveScore += impulseValid ? 30 : 0
+waveScore += abcCorrection ? 20 : 0
+waveScore += htfBull ? 20 : 0
+waveScore += confidence >= 80 ? 20 : 0
+waveScore += close > target100 ? 10 : 0
+
+waveScore := math.min(waveScore, 100)
+
+var table scoreTable = table.new(position.bottom_right, 1, 1)
+if barstate.islast
+    table.cell(scoreTable, 0, 0, "Wave Score: " + str.tostring(waveScore))
+
+alertcondition(waveScore >= 80,
+    title="High Score",
+    message="High-confidence Elliott setup")
+
+//=========================
+// Alternate Count Ranking
+//=========================
+primaryRank = waveScore
+alternateRank = waveScore - 15
+
+activeScenario = primaryRank >= alternateRank ? "PRIMARY" : "ALTERNATE"
+
+var table scenarioTable = table.new(position.top_left, 1, 2)
+if barstate.islast
+    table.cell(scenarioTable, 0, 0, "Scenario")
+    table.cell(scenarioTable, 0, 1, activeScenario)
+
+alertcondition(activeScenario == "ALTERNATE",
+    title="Alternate Count Active",
+    message="Alternate Elliott count has become dominant")
+
+//=========================
+// Elliott Setup Scanner
+//=========================
+wave12Setup =
+     impulseValid and
+     htfBull and
+     close > fib618
+
+wave3Breakout =
+     wave12Setup and
+     close > lastHigh
+
+abcCompletion =
+     abcCorrection and
+     close >= fib618
+
+plotshape(wave12Setup,
+     title="1-2 Setup",
+     style=shape.circle,
+     location=location.belowbar)
+
+plotshape(wave3Breakout,
+     title="Wave 3",
+     style=shape.triangleup,
+     location=location.belowbar)
+
+alertcondition(wave12Setup,
+     title="1-2 Setup",
+     message="Potential Elliott 1-2 setup detected")
+
+alertcondition(wave3Breakout,
+     title="Wave 3 Breakout",
+     message="Wave 3 breakout detected")
+
+alertcondition(abcCompletion,
+     title="ABC Complete",
+     message="ABC correction completed")
+
+//=========================
+// Chart Renderer
+//=========================
+if wave3Breakout
+    label.new(bar_index, high, "③", style=label.style_label_down)
+
+if abcCompletion
+    label.new(bar_index, low, "ABC", style=label.style_label_up)
+
+line.new(bar_index-1, lastLow, bar_index, lastHigh, extend=extend.none)
+
+//=========================
+// Backtesting Engine
+//=========================
+var int wins = 0
+var int losses = 0
+
+if wave3Breakout
+    wins += close > open ? 1 : 0
+    losses += close <= open ? 1 : 0
+
+totalTrades = wins + losses
+winRate = totalTrades > 0 ? wins * 100.0 / totalTrades : na
+
+var table bt = table.new(position.bottom_left, 1, 3)
+if barstate.islast
+    table.cell(bt, 0, 0, "Trades: " + str.tostring(totalTrades))
+    table.cell(bt, 0, 1, "Wins: " + str.tostring(wins))
+    table.cell(bt, 0, 2, "Win %: " + str.tostring(winRate))
+
+//=========================
+// Optimizer
+//=========================
+bestPivot = input.int(5, "Optimized Pivot Length", minval=2, maxval=20)
+useHTFFilter = input.bool(true, "Use HTF Filter")
+
+optimizedSignal =
+     wave3Breakout and
+     (not useHTFFilter or htfBull)
+
+plotshape(
+     optimizedSignal,
+     title="Optimized Signal",
+     style=shape.diamond,
+     location=location.belowbar)
+
+alertcondition(
+     optimizedSignal,
+     title="Optimized Setup",
+     message="Optimized Elliott setup detected")
