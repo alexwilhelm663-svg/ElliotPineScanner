@@ -1,0 +1,35 @@
+name: 002 Core
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create source
+        shell: bash
+        run: |
+          mkdir -p src
+          echo '//@version=6' > src/ElliottScanner.pine
+          echo 'indicator("Elliott Scanner Pro", overlay=true)' >> src/ElliottScanner.pine
+          echo 'pivotLength=input.int(5,"Pivot Length")' >> src/ElliottScanner.pine
+          echo 'ph=ta.pivothigh(high,pivotLength,pivotLength)' >> src/ElliottScanner.pine
+          echo 'pl=ta.pivotlow(low,pivotLength,pivotLength)' >> src/ElliottScanner.pine
+          echo 'plotshape(not na(ph),style=shape.triangledown,location=location.abovebar)' >> src/ElliottScanner.pine
+          echo 'plotshape(not na(pl),style=shape.triangleup,location=location.belowbar)' >> src/ElliottScanner.pine
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: add core"
+          git push
