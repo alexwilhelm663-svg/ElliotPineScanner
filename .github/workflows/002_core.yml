@@ -1,0 +1,71 @@
+name: 002 Core Framework
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create ElliottScanner core
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src
+
+          cat > src/ElliottScanner.pine <<'EOF'
+//@version=6
+indicator("Elliott Scanner Pro", overlay=true, max_labels_count=500)
+
+// ============================================================================
+// Elliott Scanner Pro
+// Version: 0.2.0
+// Stage  : Core Framework
+// ============================================================================
+
+// ---------------------- Inputs ----------------------
+groupGeneral = "General"
+groupDebug   = "Debug"
+
+pivotLength = input.int(5, "Pivot Length", minval=2, group=groupGeneral)
+showPivots  = input.bool(true, "Show Pivots", group=groupGeneral)
+debugMode   = input.bool(false, "Debug", group=groupDebug)
+
+// ---------------------- Constants -------------------
+var string VERSION = "0.2.0"
+
+// ---------------------- Utility ---------------------
+isValid(float v) =>
+    not na(v)
+
+// ---------------------- Core ------------------------
+pivotHigh = ta.pivothigh(high, pivotLength, pivotLength)
+pivotLow  = ta.pivotlow(low, pivotLength, pivotLength)
+
+if showPivots
+    plotshape(isValid(pivotHigh), title="Pivot High", style=shape.triangledown, location=location.abovebar, size=size.tiny)
+    plotshape(isValid(pivotLow), title="Pivot Low", style=shape.triangleup, location=location.belowbar, size=size.tiny)
+
+if debugMode and barstate.islast
+    label.new(bar_index, high, "Elliott Scanner Pro " + VERSION)
+EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "feat: add core framework"
+          git push
