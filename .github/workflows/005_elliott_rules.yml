@@ -1,0 +1,45 @@
+name: 005 Elliott Rules
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  elliott-rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Elliott Rules
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Elliott Rule Engine
+          //=========================
+          impulseUp =
+               not na(lastLow) and
+               not na(lastHigh) and
+               lastHigh > lastLow
+
+          correctionDown =
+               not na(lastHigh) and
+               close < lastHigh
+
+          bgcolor(impulseUp ? color.new(color.green,90) : na)
+          bgcolor(correctionDown ? color.new(color.red,90) : na)
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "005 Elliott Rules"
+          git push
