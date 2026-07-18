@@ -1,0 +1,45 @@
+name: 004 ZigZag Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  zigzag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append ZigZag Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // ZigZag Engine
+          //=========================
+          var float lastHigh = na
+          var float lastLow = na
+
+          if not na(ph)
+              lastHigh := ph
+
+          if not na(pl)
+              lastLow := pl
+
+          plot(lastHigh, title="Last High")
+          plot(lastLow, title="Last Low")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "004 ZigZag Engine"
+          git push
