@@ -1,0 +1,51 @@
+name: 018 Wave Score Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wave-score:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Wave Score Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Wave Score Engine
+          //=========================
+          float waveScore = 0.0
+
+          waveScore += impulseValid ? 30 : 0
+          waveScore += abcCorrection ? 20 : 0
+          waveScore += htfBull ? 20 : 0
+          waveScore += confidence >= 80 ? 20 : 0
+          waveScore += close > target100 ? 10 : 0
+
+          waveScore := math.min(waveScore, 100)
+
+          var table scoreTable = table.new(position.bottom_right, 1, 1)
+          if barstate.islast
+              table.cell(scoreTable, 0, 0, "Wave Score: " + str.tostring(waveScore))
+
+          alertcondition(waveScore >= 80,
+              title="High Score",
+              message="High-confidence Elliott setup")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "018 Wave Score Engine"
+          git push

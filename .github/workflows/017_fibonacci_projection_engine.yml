@@ -1,0 +1,51 @@
+name: 017 Fibonacci Projection Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fib-projection:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Fibonacci Projection Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Fibonacci Projection Engine
+          //=========================
+          waveRange = math.abs(lastHigh - lastLow)
+
+          target100 = lastHigh + waveRange * 1.000
+          target127 = lastHigh + waveRange * 1.272
+          target161 = lastHigh + waveRange * 1.618
+          target200 = lastHigh + waveRange * 2.000
+          target261 = lastHigh + waveRange * 2.618
+
+          plot(target100, title="Target 1.000")
+          plot(target127, title="Target 1.272")
+          plot(target161, title="Target 1.618")
+          plot(target200, title="Target 2.000")
+          plot(target261, title="Target 2.618")
+
+          alertcondition(close >= target161,
+              title="Wave Target",
+              message="Price reached Fibonacci projection")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "017 Fibonacci Projection Engine"
+          git push

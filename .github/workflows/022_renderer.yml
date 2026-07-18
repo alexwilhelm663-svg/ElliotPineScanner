@@ -1,0 +1,41 @@
+name: 022 Renderer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  renderer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Chart Renderer
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Chart Renderer
+          //=========================
+          if wave3Breakout
+              label.new(bar_index, high, "③", style=label.style_label_down)
+
+          if abcCompletion
+              label.new(bar_index, low, "ABC", style=label.style_label_up)
+
+          line.new(bar_index-1, lastLow, bar_index, lastHigh, extend=extend.none)
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "022 Renderer"
+          git push

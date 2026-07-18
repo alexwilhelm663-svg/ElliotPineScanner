@@ -1,0 +1,47 @@
+name: 019 Alternate Count Ranking
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  alternate-ranking:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Alternate Count Ranking
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Alternate Count Ranking
+          //=========================
+          primaryRank = waveScore
+          alternateRank = waveScore - 15
+
+          activeScenario = primaryRank >= alternateRank ? "PRIMARY" : "ALTERNATE"
+
+          var table scenarioTable = table.new(position.top_left, 1, 2)
+          if barstate.islast
+              table.cell(scenarioTable, 0, 0, "Scenario")
+              table.cell(scenarioTable, 0, 1, activeScenario)
+
+          alertcondition(activeScenario == "ALTERNATE",
+              title="Alternate Count Active",
+              message="Alternate Elliott count has become dominant")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "019 Alternate Count Ranking"
+          git push

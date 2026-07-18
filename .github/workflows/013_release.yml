@@ -1,0 +1,39 @@
+name: 013 Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package Project
+        shell: bash
+        run: |
+          mkdir -p release
+          cp src/ElliottScanner.pine release/ElliottScanner.pine
+          cp README.md release/README.md
+          cd release
+          zip -r ElliottScannerPro.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ElliottScannerPro
+          path: release/ElliottScannerPro.zip
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet && exit 0
+          git commit -m "013 Release"
+          git push

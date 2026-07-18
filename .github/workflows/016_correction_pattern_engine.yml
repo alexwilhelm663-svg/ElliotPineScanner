@@ -1,0 +1,58 @@
+name: 016 Correction Pattern Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  corrections:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Correction Pattern Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Correction Pattern Engine
+          //=========================
+          abcCorrection =
+               correctionDown and
+               close > fib382 and
+               close < fib618
+
+          flatCorrection =
+               correctionDown and
+               math.abs(close - lastLow) < fibRange * 0.1
+
+          triangleCorrection =
+               ta.falling(high, 5) and
+               ta.rising(low, 5)
+
+          correctionType =
+               abcCorrection ? "ABC" :
+               flatCorrection ? "FLAT" :
+               triangleCorrection ? "TRIANGLE" :
+               "NONE"
+
+          label.new(bar_index, low, correctionType, style=label.style_label_up)
+
+          alertcondition(abcCorrection,
+               title="ABC Correction",
+               message="ABC correction detected")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "016 Correction Pattern Engine"
+          git push

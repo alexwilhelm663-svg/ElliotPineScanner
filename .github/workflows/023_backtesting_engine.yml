@@ -1,0 +1,49 @@
+name: 023 Backtesting Engine
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtesting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Backtesting Engine
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Backtesting Engine
+          //=========================
+          var int wins = 0
+          var int losses = 0
+
+          if wave3Breakout
+              wins += close > open ? 1 : 0
+              losses += close <= open ? 1 : 0
+
+          totalTrades = wins + losses
+          winRate = totalTrades > 0 ? wins * 100.0 / totalTrades : na
+
+          var table bt = table.new(position.bottom_left, 1, 3)
+          if barstate.islast
+              table.cell(bt, 0, 0, "Trades: " + str.tostring(totalTrades))
+              table.cell(bt, 0, 1, "Wins: " + str.tostring(wins))
+              table.cell(bt, 0, 2, "Win %: " + str.tostring(winRate))
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "023 Backtesting Engine"
+          git push

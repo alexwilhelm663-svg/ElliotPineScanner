@@ -1,0 +1,46 @@
+name: 021 Smart Alerts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smart-alerts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Smart Alerts
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Smart Alerts
+          //=========================
+          strongBuy = waveScore >= 90 and wave3Breakout
+          strongSell = waveScore >= 90 and correctionDown
+
+          alertcondition(
+              strongBuy,
+              title="Strong Buy",
+              message="High-confidence Elliott BUY setup")
+
+          alertcondition(
+              strongSell,
+              title="Strong Sell",
+              message="High-confidence Elliott SELL setup")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "021 Smart Alerts"
+          git push

@@ -1,0 +1,52 @@
+name: 011 TradingView Optimization
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append TradingView Optimizations
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // TradingView Optimization
+          //=========================
+          showBackground = input.bool(true, "Show Trend Background")
+
+          trendColor =
+               bullishSignal ? color.new(color.green, 85) :
+               bearishSignal ? color.new(color.red, 85) :
+               na
+
+          bgcolor(showBackground ? trendColor : na)
+
+          plotchar(bullishSignal,
+              title="Bullish",
+              char="▲",
+              location=location.belowbar)
+
+          plotchar(bearishSignal,
+              title="Bearish",
+              char="▼",
+              location=location.abovebar)
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "011 TradingView Optimization"
+          git push

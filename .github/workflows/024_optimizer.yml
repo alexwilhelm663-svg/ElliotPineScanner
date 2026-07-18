@@ -1,0 +1,51 @@
+name: 024 Optimizer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimizer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append Optimizer
+        shell: bash
+        run: |
+          cat >> src/ElliottScanner.pine <<'EOF'
+
+          //=========================
+          // Optimizer
+          //=========================
+          bestPivot = input.int(5, "Optimized Pivot Length", minval=2, maxval=20)
+          useHTFFilter = input.bool(true, "Use HTF Filter")
+
+          optimizedSignal =
+               wave3Breakout and
+               (not useHTFFilter or htfBull)
+
+          plotshape(
+               optimizedSignal,
+               title="Optimized Signal",
+               style=shape.diamond,
+               location=location.belowbar)
+
+          alertcondition(
+               optimizedSignal,
+               title="Optimized Setup",
+               message="Optimized Elliott setup detected")
+          EOF
+
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/ElliottScanner.pine
+          git diff --cached --quiet && exit 0
+          git commit -m "024 Optimizer"
+          git push
