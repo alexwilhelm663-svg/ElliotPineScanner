@@ -1,7 +1,11 @@
 //@version=6
-indicator("Elliott Scanner Pro", overlay=true)
-pivotLength=input.int(5,"Pivot Length")
-ph=ta.pivothigh(high,pivotLength,pivotLength)
-pl=ta.pivotlow(low,pivotLength,pivotLength)
-plotshape(not na(ph),style=shape.triangledown,location=location.abovebar)
-plotshape(not na(pl),style=shape.triangleup,location=location.belowbar)
+indicator("Elliott Scanner Pro", overlay=true, max_labels_count=500, max_lines_count=500)
+
+pivotLength = input.int(5, "Pivot Length", minval=2)
+showPivots = input.bool(true, "Show Pivots")
+
+ph = ta.pivothigh(high, pivotLength, pivotLength)
+pl = ta.pivotlow(low, pivotLength, pivotLength)
+
+plotshape(showPivots and not na(ph), style=shape.triangledown, location=location.abovebar)
+plotshape(showPivots and not na(pl), style=shape.triangleup, location=location.belowbar)
