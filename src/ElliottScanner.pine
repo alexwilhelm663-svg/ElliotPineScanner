@@ -126,3 +126,25 @@ alertcondition(bullishSignal,
 alertcondition(bearishSignal,
     title="Bearish Setup",
     message="Bearish Elliott setup detected")
+
+//=========================
+// TradingView Optimization
+//=========================
+showBackground = input.bool(true, "Show Trend Background")
+
+trendColor =
+     bullishSignal ? color.new(color.green, 85) :
+     bearishSignal ? color.new(color.red, 85) :
+     na
+
+bgcolor(showBackground ? trendColor : na)
+
+plotchar(bullishSignal,
+    title="Bullish",
+    char="▲",
+    location=location.belowbar)
+
+plotchar(bearishSignal,
+    title="Bearish",
+    char="▼",
+    location=location.abovebar)
